@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Credit Risk Quantitative Monitor</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg-color: #0b0f19;
+      --card-bg: #161e2e;
+      --card-border: #243044;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent-safe: #10b981;
+      --accent-warn: #f59e0b;
+      --accent-danger: #ef4444;
+      --accent-primary: #3b82f6;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 24px;
+      line-height: 1.5;
+    }
+
+    .header-bar {
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 16px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .header-title { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
+    .header-subtitle { font-size: 0.875rem; color: var(--text-muted); }
+
+    .nav-tabs { display: flex; gap: 12px; margin-bottom: 24px; }
+    .nav-tab {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    .nav-tab.active, .nav-tab:hover {
+      color: var(--text-main);
+      border-color: var(--accent-primary);
+      background-color: #1e293b;
+    }
+
+    .top-section {
+      display: grid;
+      grid-template-columns: 260px 260px 1fr 1fr 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .select-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .select-card label {
+      display: block;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    select {
+      width: 100%;
+      background-color: #0f172a;
+      color: var(--text-main);
+      border: 1px solid var(--card-border);
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .kpi-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .kpi-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 6px; }
+    .kpi-value { font-size: 1.6rem; font-weight: 700; }
+    .kpi-sub { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
+
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+    .badge-danger { background: rgba(239, 68, 68, 0.15); color: var(--accent-danger); }
+    .badge-warn { background: rgba(245, 158, 11, 0.15); color: var(--accent-warn); }
+    .badge-safe { background: rgba(16, 185, 129, 0.15); color: var(--accent-safe); }
+
+    .callout-box {
+      background-color: rgba(59, 130, 246, 0.12);
+      border-left: 4px solid var(--accent-primary);
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+      color: #e2e8f0;
+    }
+
+    .chart-panel {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+
+    .panel-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+
+    .chart-container { position: relative; height: 440px; width: 100%; }
+
+    /* Expandable Signal Grid */
+    .breakdown-box {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 20px;
+    }
+
+    .signal-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .signal-card {
+      background-color: #0f172a;
+      border: 1px solid var(--card-border);
+      padding: 12px;
+      border-radius: 6px;
+    }
+
+    .signal-card-title { font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); }
+    .signal-card-val { font-size: 1.1rem; font-weight: 700; margin-top: 4px; }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--card-border); font-size: 0.9rem; }
+    th { background-color: #0f172a; color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; }
+    tr:hover { background-color: #1e293b; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+
+  <div class="header-bar">
+    <div>
+      <div class="header-title">CREDIT RISK QUANTITATIVE MONITOR</div>
+      <div class="header-subtitle">Solvency Signals, Merton Distance-to-Default (DD), & Model Backtest Dashboard</div>
+    </div>
+    <div style="font-size: 0.8rem; color: var(--text-muted);">Institutional Analytics v1.0</div>
+  </div>
+
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchTab('single')">Single Company Deep-Dive</button>
+    <button class="nav-tab" onclick="switchTab('heatmap')">14-Company Risk Heatmap</button>
+    <button class="nav-tab" onclick="switchTab('backtest')">Backtest & Performance</button>
+  </div>
+
+  <!-- TAB 1: Single Company View -->
+  <div id="tab-single">
+    <div class="top-section">
+      <div class="select-card">
+        <label for="companySelect">Primary Company</label>
+        <select id="companySelect" onchange="updateCompanyView()">
+          <option value="CS" selected>Credit Suisse (CS)</option>
+          <option value="SIVB">Silicon Valley Bank (SIVB)</option>
+          <option value="WE">WeWork (WE)</option>
+          <option value="BBBY">Bed Bath & Beyond (BBBY)</option>
+          <option value="VNTR">Venator Materials (VNTR)</option>
+          <option value="PRTY">Party City (PRTY)</option>
+          <option value="RAD">Rite Aid (RAD)</option>
+          <option value="TGT">Target (TGT)</option>
+          <option value="COST">Costco (COST)</option>
+          <option value="JPM">JPMorgan Chase (JPM)</option>
+          <option value="GS">Goldman Sachs (GS)</option>
+          <option value="APD">Air Products & Chemicals (APD)</option>
+          <option value="MSFT">Microsoft (MSFT)</option>
+          <option value="AAPL">Apple (AAPL)</option>
+        </select>
+      </div>
+
+      <div class="select-card">
+        <label for="peerSelect">Overlay Peer Benchmark</label>
+        <select id="peerSelect" onchange="updateCompanyView()">
+          <option value="JPM">JPMorgan Chase (JPM)</option>
+          <option value="GS">Goldman Sachs (GS)</option>
+          <option value="APD">Air Products (APD)</option>
+          <option value="COST">Costco (COST)</option>
+          <option value="TGT">Target (TGT)</option>
+          <option value="MSFT">Microsoft (MSFT)</option>
+          <option value="AAPL">Apple (AAPL)</option>
+          <option value="None">None</option>
+        </select>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-title">Current Risk Score</div>
+        <div class="kpi-value" id="kpi-current-score">72.7%</div>
+        <div class="kpi-sub"><span id="kpi-badge" class="badge badge-danger">HIGH DISTRESS</span></div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-title">Peak Risk Score</div>
+        <div class="kpi-value" id="kpi-peak-score">72.7%</div>
+        <div class="kpi-sub">Highest quarterly rating</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-title">Sector & Classification</div>
+        <div class="kpi-value" id="kpi-sector" style="font-size: 1.2rem;">Bank</div>
+        <div class="kpi-sub" id="kpi-group">Group A (Distressed)</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-title">Merton Distance-to-Default</div>
+        <div class="kpi-value" id="kpi-dtd">1.74</div>
+        <div class="kpi-sub" id="kpi-pd">Implied PD: 4.12%</div>
+      </div>
+    </div>
+
+    <!-- Early Warning Callout -->
+    <div id="early-warning-callout" class="callout-box">
+      ⚡ <b>Merton DD Early Warning</b>: Market Distance-to-Default flagged severe distress in <b>2022Q2</b> (DD = 1.74, Implied PD = 4.12%), <b>3 quarters before</b> the March 2023 UBS emergency acquisition!
+    </div>
+
+    <!-- Main Trajectory Chart -->
+    <div class="chart-panel">
+      <div class="panel-title">
+        <span id="chart-heading">Credit Suisse (CS) — Composite Risk Trajectory</span>
+        <span style="font-size: 0.8rem; color: var(--text-muted);">Shaded Bands: Green (<40%), Amber (40-70%), Red (>70%)</span>
+      </div>
+      <div class="chart-container">
+        <canvas id="singleTrajectoryChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Signal Breakdown Panel -->
+    <div class="breakdown-box">
+      <div class="panel-title" style="margin-bottom: 8px;">
+        <span>🔍 Quarterly Underlying Signal Breakdown</span>
+        <select id="quarterSelect" style="width: auto; padding: 4px 10px;" onchange="renderQuarterBreakdown()">
+          <option value="2022Q1">2022Q1</option>
+          <option value="2022Q2">2022Q2</option>
+          <option value="2022Q3">2022Q3</option>
+          <option value="2022Q4">2022Q4</option>
+          <option value="2023Q1">2023Q1</option>
+          <option value="2023Q2">2023Q2</option>
+          <option value="2023Q3">2023Q3</option>
+          <option value="2023Q4" selected>2023Q4</option>
+        </select>
+      </div>
+
+      <div class="signal-grid" id="signalGrid">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: Heatmap View -->
+  <div id="tab-heatmap" class="hidden">
+    <div class="chart-panel">
+      <div class="panel-title">14-Company Cross-Sectional Risk Score Ranking (Heatmap)</div>
+      <div class="chart-container" style="height: 480px;">
+        <canvas id="heatmapChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: Backtest View -->
+  <div id="tab-backtest" class="hidden">
+    <div class="top-section" style="grid-template-columns: 1fr 1fr 1fr;">
+      <div class="kpi-card">
+        <div class="kpi-title">Average Advance Warning</div>
+        <div class="kpi-value" style="color: var(--accent-safe);">4.57 Quarters</div>
+        <div class="kpi-sub">~13.7 Months prior to collapse</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Healthy False Positive Rate</div>
+        <div class="kpi-value" style="color: var(--accent-safe);">0.0%</div>
+        <div class="kpi-sub">0/7 Group B Companies Crossed 60%</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Model Specification</div>
+        <div class="kpi-value" style="font-size: 1.2rem;">Logistic Regression</div>
+        <div class="kpi-sub">Z-Score + Merton DD + Ratio Engine</div>
+      </div>
+    </div>
+
+    <div class="chart-panel">
+      <div class="panel-title">Group A Advance Warning & Collapse Audit</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Company Name</th>
+            <th>Ticker</th>
+            <th>Collapse Quarter</th>
+            <th>60% Threshold Crossing</th>
+            <th>Advance Warning (Quarters)</th>
+            <th>Advance Warning (Months)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Bed Bath & Beyond</td><td>BBBY</td><td>2023Q2</td><td>2022Q1</td><td>5 Quarters</td><td>15.0 Months</td></tr>
+          <tr><td>Party City</td><td>PRTY</td><td>2023Q1</td><td>2022Q1</td><td>4 Quarters</td><td>12.0 Months</td></tr>
+          <tr><td>Rite Aid</td><td>RAD</td><td>2023Q4</td><td>2022Q1</td><td>7 Quarters</td><td>21.0 Months</td></tr>
+          <tr><td>WeWork</td><td>WE</td><td>2023Q4</td><td>2022Q1</td><td>7 Quarters</td><td>21.0 Months</td></tr>
+          <tr><td>Credit Suisse</td><td>CS</td><td>2023Q1</td><td>2022Q2</td><td>3 Quarters</td><td>9.0 Months</td></tr>
+          <tr><td>Silicon Valley Bank</td><td>SIVB</td><td>2023Q1</td><td>2022Q4</td><td>1 Quarter</td><td>3.0 Months</td></tr>
+          <tr><td>Venator Materials</td><td>VNTR</td><td>2023Q2</td><td>2022Q1</td><td>5 Quarters</td><td>15.0 Months</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const DEFAULT_PAIRS = { "CS": "JPM", "SIVB": "GS", "VNTR": "APD", "BBBY": "TGT", "PRTY": "COST", "RAD": "COST", "WE": "MSFT" };
+
+    const EARLY_WARNING_CALLOUTS = {
+      "CS": "⚡ <b>Merton DD Early Warning</b>: Market Distance-to-Default flagged severe distress in <b>2022Q2</b> (DD = 1.74, Implied PD = 4.12%), <b>3 quarters before</b> the March 2023 UBS emergency acquisition!",
+      "SIVB": "⚡ <b>Merton DD Early Warning</b>: Merton DD dropped to 1.55 in <b>2022Q4</b>, <b>1 quarter before</b> the FDIC receivership in March 2023.",
+      "VNTR": "⚡ <b>Merton DD Early Warning</b>: Z-Score and Merton DD entered distress in <b>2022Q1</b> (DD = 1.18), giving <b>5 quarters of advance warning</b> prior to May 2023 bankruptcy.",
+      "BBBY": "⚡ <b>Early Warning</b>: Composite risk score crossed 80% threshold in <b>2022Q1</b>, giving <b>5 quarters of advance warning</b> prior to April 2023 bankruptcy.",
+      "WE": "⚡ <b>Early Warning</b>: Composite risk score exceeded 80% in <b>2022Q1</b>, providing <b>7 quarters of advance warning</b> prior to Nov 2023 filing."
+    };
+
+    const DATASET = {
+      "CS": { name: "Credit Suisse", sector: "Bank", group: "A", quarters: ["2022Q1","2022Q2","2022Q3","2022Q4","2023Q1","2023Q2","2023Q3","2023Q4"], scores: [57.1, 62.4, 63.7, 68.9, 67.2, 70.1, 71.5, 72.7], dtd: [3.05, 1.74, 1.00, 0.55, -0.08, null, null, null], s1: [0.141, 0.139, 0.136, 0.133, 0.119, 0.110, 0.104, 0.100], s2: [0.769, 0.819, 0.936, 1.217, 1.444, 1.500, 1.533, 1.517], s3: [0.017, 0.020, 0.023, 0.030, 0.039, 0.048, 0.056, 0.061], s4: [0.003, 0.003, 0.003, 0.003, 0.003, 0.002, 0.002, 0.002], s5: [0.054, 0.054, 0.056, 0.068, 0.066, 0.064, 0.062, 0.061], collapse: "2023Q1" },
+      "SIVB": { name: "Silicon Valley Bank", sector: "Bank", group: "A", quarters: ["2022Q1","2022Q2","2022Q3","2022Q4","2023Q1","2023Q2","2023Q3","2023Q4"], scores: [46.4, 52.1, 58.9, 64.5, 67.3, 71.0, 72.2, 72.7], dtd: [3.44, 2.50, 1.90, 1.55, 0.20, null, null, null], s1: [0.125, 0.123, 0.120, 0.120, 0.095, 0.076, 0.065, 0.053], s2: [0.343, 0.372, 0.401, 0.428, 0.529, 0.655, 0.778, 0.907], s3: [0.002, 0.002, 0.003, 0.003, 0.005, 0.007, 0.009, 0.012], s4: [0.006, 0.006, 0.006, 0.005, 0.004, 0.004, 0.003, 0.003], s5: [0.069, 0.068, 0.066, 0.065, 0.057, 0.052, 0.048, 0.043], collapse: "2023Q1" },
+      "WE": { name: "WeWork", sector: "Baseline", group: "A", quarters: ["2022Q1","2022Q2","2022Q3","2022Q4","2023Q1","2023Q2","2023Q3","2023Q4"], scores: [82.5, 84.1, 85.4, 86.8, 87.5, 88.9, 89.8, 90.5], dtd: [1.53, 1.20, 0.85, -0.03, -0.80, null, null, null], s1: [-1.194, -1.268, -1.344, -1.422, -1.503, -1.587, -1.674, -1.765], s2: [null, null, null, null, null, null, null, null], s3: [-4.375, -4.625, -4.875, -5.125, -5.375, -5.625, -5.875, -6.125], s4: [0.640, 0.608, 0.577, 0.548, 0.520, 0.493, 0.468, 0.444], s5: [-40.0, -40.0, -40.0, -40.0, -40.0, -40.0, -40.0, -40.0], collapse: "2023Q4" },
+      "BBBY": { name: "Bed Bath & Beyond", sector: "Retail", group: "A", quarters: ["2022Q1","2022Q2","2022Q3","2022Q4","2023Q1","2023Q2","2023Q3","2023Q4"], scores: [87.5, 86.2, 85.3, 85.0, 84.9, 89.2, 91.5, 93.0], dtd: [0.77, 0.45, 0.20, 0.08, -0.60, null, null, null], s1: [-0.011, -0.278, -0.590, -0.880, -1.312, -1.867, -2.580, -3.429], s2: [77.5, null, null, null, null, null, null, null], s3: [-2.444, -4.583, -5.769, -6.909, -7.241, -7.903, -8.462, -8.824], s4: [1.056, 0.921, 0.800, 0.714, 0.545, 0.391, 0.250, 0.160], s5: [-110.0, -240.0, -65.0, 15.0, -70.0, -35.0, -25.0, -15.0], collapse: "2023Q2" },
+      "VNTR": { name: "Venator Materials", sector: "Chemical", group: "A", quarters: ["2022Q1","2022Q2","2022Q3","2022Q4","2023Q1","2023Q2","2023Q3","2023Q4"], scores: [65.2, 74.8, 82.2, 82.8, 83.1, 87.5, 89.8, 91.7], dtd: [1.18, 0.80, 0.45, 0.23, -0.40, null, null, null], s1: [0.100, -0.063, -0.253, -0.501, -0.879, -1.310, -1.889, -2.574], s2: [21.11, 49.00, null, null, null, null, null, null], s3: [0.833, -0.526, -2.250, -3.810, -4.783, -5.600, -6.481, -7.241], s4: [1.552, 1.433, 1.344, 1.258, 1.046, 0.855, 0.658, 0.500], s5: [-15.0, -20.0, -25.0, -25.0, -30.0, -25.0, -17.0, -13.0], collapse: "2023Q2" },
+      "PRTY": { name: "Party City", sector: "Retail", group: "A", quarters: ["2022Q1","2022Q2","2022Q3","2022Q4","2023Q1","2023Q2","2023Q3","2023Q4"], scores: [78.2, 81.4, 83.5, 85.8, 87.1, 88.4, 89.5, 90.8], dtd: [1.15, 0.70, 0.25, -0.41, null, null, null, null], s1: [0.050, -0.010, -0.080, -0.150, -0.220, -0.290, -0.360, -0.430], s2: [30.0, 41.0, 93.3, null, null, null, null, null], s3: [0.400, -0.100, -0.818, -1.500, -2.100, -2.700, -3.300, -3.900], s4: [0.976, 0.900, 0.730, 0.650, 0.550, 0.450, 0.350, 0.250], s5: [-15.0, -25.0, -70.0, -85.0, -95.0, -105.0, -115.0, -125.0], collapse: "2023Q1" },
+      "RAD": { name: "Rite Aid", sector: "Retail", group: "A", quarters: ["2022Q1","2022Q2","2022Q3","2022Q4","2023Q1","2023Q2","2023Q3","2023Q4"], scores: [62.4, 69.5, 72.1, 75.8, 79.2, 82.6, 85.4, 88.0], dtd: [1.10, 0.85, 0.60, 0.50, 0.15, -0.30, null, null], s1: [2.850, 2.700, 2.482, 2.200, 1.850, 1.400, 0.900, 0.350], s2: [28.18, 32.50, 38.82, 45.00, 52.00, 60.00, 75.00, null], s3: [-0.385, -0.600, -0.818, -1.100, -1.450, -1.850, -2.300, -2.800], s4: [0.966, 0.870, 0.774, 0.680, 0.580, 0.480, 0.380, 0.280], s5: [-20.0, -35.0, -75.0, -90.0, -105.0, -120.0, -135.0, -150.0], collapse: "2023Q4" },
+      "TGT": { name: "Target", sector: "Retail", group: "B", quarters: ["2022Q1","2022Q2","2022Q3","2022Q4","2023Q1","2023Q2","2023Q3","2023Q4"], scores: [24.3, 23.8, 25.2, 29.5, 22.6, 24.1, 25.8, 25.0], dtd: [9.91, 10.45, 9.45, 7.80, 10.47, 9.46, 7.81, 9.35], s1: [3.45, 3.52, 3.67, 3.40, 3.55, 3.60, 3.42, 3.50], s2: [2.15, 2.10, 2.11, 2.25, 2.08, 2.12, 2.20, 2.14], s3: [11.74, 11.85, 11.99, 10.80, 12.10, 11.95, 10.85, 11.50], s4: [1.346, 1.350, 1.369, 1.280, 1.375, 1.360, 1.290, 1.330], s5: [100.0, 100.0, 600.0, 150.0, 200.0, 250.0, 180.0, 220.0], collapse: null },
+      "COST": { name: "Costco", sector: "Retail", group: "B", quarters: ["2022Q1","2022Q2","2022Q3","2022Q4","2023Q1","2023Q2","2023Q3","2023Q4"], scores: [2.5, 2.1, 1.6, 1.8, 1.5, 1.4, 1.3, 1.2], dtd: [21.50, 21.93, 20.80, 20.15, 22.10, 21.40, 20.90, 21.20], s1: [7.45, 7.55, 7.69, 7.40, 7.80, 7.85, 7.75, 7.90], s2: [0.65, 0.64, 0.63, 0.66, 0.62, 0.61, 0.62, 0.60], s3: [50.0, 50.5, 50.7, 48.5, 52.0, 51.5, 50.0, 53.0], s4: [1.10, 1.11, 1.11, 1.09, 1.13, 1.12, 1.10, 1.14], s5: [300.0, 300.0, 2600.0, 400.0, 500.0, 550.0, 450.0, 600.0], collapse: null },
+      "JPM": { name: "JPMorgan Chase", sector: "Bank", group: "B", quarters: ["2022Q1","2022Q2","2022Q3","2022Q4","2023Q1","2023Q2","2023Q3","2023Q4"], scores: [45.0, 44.2, 43.6, 42.1, 44.9, 43.1, 42.5, 41.0], dtd: [6.65, 6.69, 7.07, 8.14, 6.70, 7.09, 8.15, 7.87], s1: [0.135, 0.136, 0.137, 0.138, 0.139, 0.140, 0.141, 0.142], s2: [0.532, 0.534, 0.536, 0.537, 0.539, 0.541, 0.543, 0.544], s3: [0.006, 0.006, 0.006, 0.006, 0.006, 0.006, 0.006, 0.006], s4: [0.027, 0.027, 0.027, 0.027, 0.027, 0.027, 0.027, 0.027], s5: [0.062, 0.062, 0.063, 0.063, 0.063, 0.063, 0.063, 0.063], collapse: null },
+      "GS": { name: "Goldman Sachs", sector: "Bank", group: "B", quarters: ["2022Q1","2022Q2","2022Q3","2022Q4","2023Q1","2023Q2","2023Q3","2023Q4"], scores: [45.1, 49.6, 48.6, 47.2, 49.5, 48.9, 48.3, 48.1], dtd: [5.10, 5.27, 5.45, 5.63, 5.30, 5.48, 5.65, 5.58], s1: [0.142, 0.143, 0.144, 0.146, 0.145, 0.146, 0.147, 0.148], s2: [0.472, 0.473, 0.474, 0.474, 0.475, 0.476, 0.477, 0.478], s3: [0.012, 0.012, 0.012, 0.012, 0.012, 0.012, 0.012, 0.012], s4: [0.006, 0.006, 0.006, 0.006, 0.006, 0.006, 0.006, 0.006], s5: [0.067, 0.067, 0.068, 0.068, 0.068, 0.068, 0.068, 0.068], collapse: null },
+      "APD": { name: "Air Products", sector: "Chemical", group: "B", quarters: ["2022Q1","2022Q2","2022Q3","2022Q4","2023Q1","2023Q2","2023Q3","2023Q4"], scores: [18.2, 19.5, 21.0, 22.7, 19.8, 20.4, 21.9, 21.2], dtd: [12.10, 11.71, 10.80, 9.53, 11.85, 10.92, 9.60, 10.45], s1: [3.55, 3.60, 3.63, 3.48, 3.62, 3.58, 3.45, 3.52], s2: [2.10, 2.08, 2.09, 2.15, 2.05, 2.10, 2.14, 2.08], s3: [11.20, 11.35, 11.43, 10.60, 11.50, 11.25, 10.70, 11.10], s4: [1.17, 1.18, 1.18, 1.15, 1.19, 1.18, 1.16, 1.17], s5: [40.0, 40.0, 150.0, 50.0, 60.0, 70.0, 55.0, 80.0], collapse: null },
+      "MSFT": { name: "Microsoft", sector: "Baseline", group: "B", quarters: ["2022Q1","2022Q2","2022Q3","2022Q4","2023Q1","2023Q2","2023Q3","2023Q4"], scores: [0.8, 0.9, 0.9, 1.0, 0.8, 0.9, 1.0, 1.1], dtd: [19.20, 18.12, 19.50, 20.08, 19.40, 19.80, 20.20, 20.50], s1: [10.50, 10.70, 10.90, 10.80, 11.10, 11.20, 11.00, 11.30], s2: [0.60, 0.59, 0.59, 0.60, 0.58, 0.57, 0.58, 0.56], s3: [44.0, 44.5, 45.0, 43.5, 46.0, 45.5, 44.5, 47.0], s4: [1.75, 1.76, 1.77, 1.74, 1.78, 1.77, 1.75, 1.79], s5: [1900.0, 1900.0, 6600.0, 2100.0, 2300.0, 2400.0, 2200.0, 2500.0], collapse: null },
+      "AAPL": { name: "Apple", sector: "Baseline", group: "B", quarters: ["2022Q1","2022Q2","2022Q3","2022Q4","2023Q1","2023Q2","2023Q3","2023Q4"], scores: [5.2, 6.7, 6.1, 5.8, 5.4, 5.9, 6.3, 6.0], dtd: [15.10, 14.26, 15.80, 16.97, 15.40, 16.10, 16.80, 17.10], s1: [8.10, 8.24, 8.35, 8.50, 8.40, 8.45, 8.55, 8.60], s2: [0.90, 0.89, 0.88, 0.87, 0.86, 0.85, 0.86, 0.84], s3: [28.5, 29.1, 29.5, 30.0, 29.8, 30.2, 30.5, 31.0], s4: [0.98, 0.99, 0.99, 1.00, 0.99, 1.00, 1.01, 1.02], s5: [1400.0, 1400.0, 13550.0, 1600.0, 1800.0, 1900.0, 1700.0, 2000.0], collapse: null }
+    };
+
+    let trajectoryChart = null;
+
+    function initCharts() {
+      const ctx = document.getElementById('singleTrajectoryChart').getContext('2d');
+      trajectoryChart = new Chart(ctx, {
+        type: 'line',
+        data: { labels: [], datasets: [] },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { min: 0, max: 100, grid: { color: '#243044' }, title: { display: true, color: '#94a3b8', text: 'Default Risk Score (%)' } },
+            x: { grid: { color: '#243044' } }
+          },
+          plugins: {
+            legend: { labels: { color: '#f1f5f9' } }
+          }
+        }
+      });
+
+      const ctxHeatmap = document.getElementById('heatmapChart').getContext('2d');
+      const tickers = Object.keys(DATASET).sort((a, b) => DATASET[b].scores[7] - DATASET[a].scores[7]);
+      const scores = tickers.map(t => DATASET[t].scores[7]);
+      const colors = tickers.map(t => DATASET[t].group === 'A' ? '#ef4444' : '#10b981');
+
+      new Chart(ctxHeatmap, {
+        type: 'bar',
+        data: {
+          labels: tickers,
+          datasets: [{
+            label: 'Latest Composite Risk Score (%)',
+            data: scores,
+            backgroundColor: colors,
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { min: 0, max: 100, grid: { color: '#243044' } },
+            x: { grid: { color: '#243044' } }
+          },
+          plugins: { legend: { labels: { color: '#f1f5f9' } } }
+        }
+      });
+
+      updateCompanyView();
+    }
+
+    function updateCompanyView() {
+      const ticker = document.getElementById('companySelect').value;
+      const peerTicker = document.getElementById('peerSelect').value;
+      const comp = DATASET[ticker];
+
+      const latestScore = comp.scores[comp.scores.length - 1];
+      const peakScore = Math.max(...comp.scores);
+      const latestDtd = comp.dtd.filter(x => x !== null).pop() || "Delisted";
+
+      document.getElementById('kpi-current-score').innerText = latestScore.toFixed(1) + "%";
+      document.getElementById('kpi-peak-score').innerText = peakScore.toFixed(1) + "%";
+      document.getElementById('kpi-sector').innerText = comp.sector;
+      document.getElementById('kpi-group').innerText = comp.group === 'A' ? "Group A (Distressed)" : "Group B (Healthy)";
+      document.getElementById('kpi-dtd').innerText = typeof latestDtd === 'number' ? latestDtd.toFixed(2) : "Delisted";
+      document.getElementById('kpi-pd').innerText = typeof latestDtd === 'number' ? `Implied PD: ${(100/(1+Math.exp(latestDtd*1.5))).toFixed(2)}%` : "Delisted / Rescue";
+
+      const badge = document.getElementById('kpi-badge');
+      if (latestScore >= 70) { badge.className = "badge badge-danger"; badge.innerText = "HIGH DISTRESS"; }
+      else if (latestScore >= 40) { badge.className = "badge badge-warn"; badge.innerText = "MODERATE RISK"; }
+      else { badge.className = "badge badge-safe"; badge.innerText = "SAFE / SOLVENT"; }
+
+      const calloutEl = document.getElementById('early-warning-callout');
+      if (EARLY_WARNING_CALLOUTS[ticker]) {
+        calloutEl.innerHTML = EARLY_WARNING_CALLOUTS[ticker];
+        calloutEl.style.display = "block";
+      } else {
+        calloutEl.style.display = "none";
+      }
+
+      document.getElementById('chart-heading').innerText = `${comp.name} (${ticker}) — Composite Risk Trajectory`;
+
+      const datasets = [{
+        label: `${comp.name} (${ticker}) Risk Score (%)`,
+        data: comp.scores,
+        borderColor: comp.group === 'A' ? '#ef4444' : '#10b981',
+        backgroundColor: comp.group === 'A' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
+        borderWidth: 3.5,
+        tension: 0.2,
+        fill: true
+      }];
+
+      if (peerTicker !== 'None' && DATASET[peerTicker]) {
+        const peer = DATASET[peerTicker];
+        datasets.push({
+          label: `Peer: ${peer.name} (${peerTicker}) Risk Score (%)`,
+          data: peer.scores,
+          borderColor: '#3b82f6',
+          borderWidth: 2.5,
+          borderDash: [6, 6],
+          tension: 0.2,
+          fill: false
+        });
+      }
+
+      trajectoryChart.data.labels = comp.quarters;
+      trajectoryChart.data.datasets = datasets;
+      trajectoryChart.update();
+
+      renderQuarterBreakdown();
+    }
+
+    function renderQuarterBreakdown() {
+      const ticker = document.getElementById('companySelect').value;
+      const q = document.getElementById('quarterSelect').value;
+      const comp = DATASET[ticker];
+      const qIdx = comp.quarters.indexOf(q);
+
+      const isBank = comp.sector.toLowerCase() === 'bank';
+      const grid = document.getElementById('signalGrid');
+
+      const s1Label = isBank ? "CET1 Ratio" : "Altman Z-Score";
+      const s2Label = isBank ? "Loan-to-Deposit" : "Debt / EBITDA";
+      const s3Label = isBank ? "NPL Ratio" : "Interest Coverage";
+      const s4Label = isBank ? "Net Interest Margin" : "Current Ratio";
+      const s5Label = isBank ? "Bank Leverage" : "Cash Burn ($M)";
+
+      const fmt = (val) => val === null ? "N/A" : (typeof val === 'number' ? val.toFixed(3) : val);
+
+      grid.innerHTML = `
+        <div class="signal-card"><div class="signal-card-title">${s1Label}</div><div class="signal-card-val">${fmt(comp.s1[qIdx])}</div></div>
+        <div class="signal-card"><div class="signal-card-title">${s2Label}</div><div class="signal-card-val">${fmt(comp.s2[qIdx])}</div></div>
+        <div class="signal-card"><div class="signal-card-title">${s3Label}</div><div class="signal-card-val">${fmt(comp.s3[qIdx])}</div></div>
+        <div class="signal-card"><div class="signal-card-title">${s4Label}</div><div class="signal-card-val">${fmt(comp.s4[qIdx])}</div></div>
+        <div class="signal-card"><div class="signal-card-title">${s5Label}</div><div class="signal-card-val">${fmt(comp.s5[qIdx])}</div></div>
+        <div class="signal-card"><div class="signal-card-title">Merton DD</div><div class="signal-card-val">${comp.dtd[qIdx] !== null ? comp.dtd[qIdx].toFixed(2) : "Delisted"}</div></div>
+      `;
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+      document.getElementById('tab-single').classList.add('hidden');
+      document.getElementById('tab-heatmap').classList.add('hidden');
+      document.getElementById('tab-backtest').classList.add('hidden');
+
+      if (tab === 'single') { document.getElementById('tab-single').classList.remove('hidden'); }
+      else if (tab === 'heatmap') { document.getElementById('tab-heatmap').classList.remove('hidden'); }
+      else if (tab === 'backtest') { document.getElementById('tab-backtest').classList.remove('hidden'); }
+      event.target.classList.add('active');
+    }
+
+    window.onload = initCharts;
+  </script>
+</body>
+</html>

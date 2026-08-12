@@ -1,0 +1,41 @@
+{
+  "model_type": "LogisticRegression",
+  "feature_names": [
+    "signal_1_solvency",
+    "signal_2_leverage",
+    "signal_3_coverage",
+    "signal_4_liquidity",
+    "signal_5_cashflow",
+    "distance_to_default"
+  ],
+  "intercept": -0.27373612053271257,
+  "coefficients": [
+    -0.47066805899917097,
+    0.634154474169246,
+    -0.37762400092743426,
+    -0.04118451601667668,
+    -0.1843583556468355,
+    -1.0049355582980082
+  ],
+  "scaler_means": [
+    1.5583029815951819,
+    21.826174653382775,
+    7.430644649367882,
+    0.7333284693730031,
+    255.41960876510103,
+    6.362846524680757
+  ],
+  "scaler_stds": [
+    3.2280027327225853,
+    34.2209448606511,
+    16.84014497979112,
+    0.5652738464433402,
+    583.7746274484787,
+    7.514142457727354
+  ],
+  "imputation_strategy": {
+    "negative_ebitda_debt_ebitda": 50.0,
+    "negative_coverage": -5.0,
+    "delisted_merton_dd": -2.0
+  }
+}

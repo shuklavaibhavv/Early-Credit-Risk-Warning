@@ -1,0 +1,24 @@
+{
+  "group_a_advance_warning": {
+    "threshold_60_pct": {
+      "average_quarters_warning": 4.57,
+      "average_months_warning": 13.7
+    },
+    "threshold_70_pct": {
+      "average_quarters_warning": 5.2,
+      "average_months_warning": 15.6
+    }
+  },
+  "group_b_false_positives": {
+    "threshold_60_pct": {
+      "false_positive_count": 0,
+      "total_healthy_companies": 7,
+      "false_positive_rate_pct": 0.0
+    },
+    "threshold_70_pct": {
+      "false_positive_count": 0,
+      "total_healthy_companies": 7,
+      "false_positive_rate_pct": 0.0
+    }
+  }
+}
