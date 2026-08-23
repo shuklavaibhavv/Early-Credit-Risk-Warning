@@ -14,6 +14,14 @@ Standard financial ratios like Altman Z-Score work well for normal retail or che
 
 ---
 
+## 📋 Credit Opportunity Memo
+
+As a follow-on deliverable, I synthesized this model's quantitative findings on Credit Suisse into a formal investment-banking-style credit memo. The memorandum translates raw model signals into an institutional credit report covering business & industry overview, capital structure (including Swiss regulator FINMA's AT1 bond write-down), balance-sheet red flags, peer benchmarking against JPMorgan Chase and Goldman Sachs, and a quantified rating recommendation.
+
+📄 **[View Full Credit Opportunity Memo (PDF)](reports/Credit_Opportunity_Memo_CreditSuisse.pdf)**
+
+---
+
 ## 🛠️ How It Works
 
 ### 1. Dual-Path Ratio Engine
@@ -54,6 +62,9 @@ credit_risk_project/
 │   ├── index.html                  # Standalone interactive dark-theme HTML/JS dashboard
 │   ├── app.py                      # Streamlit interactive dashboard
 │   └── .streamlit/config.toml      # Dark navy visual theme config
+├── reports/
+│   ├── Credit_Opportunity_Memo_CreditSuisse.pdf  # Investment-banking-style Credit Memo (PDF)
+│   └── Credit_Opportunity_Memorandum_CS.md       # Markdown version of Credit Memo
 ├── data/                           # Generated CSV signals, JSON models & backtest results
 └── research_note.md                # Quantitative methodology writeup & mathematical breakdown
 ```
