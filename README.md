@@ -1,5 +1,7 @@
 # Quantitative Credit Risk & Solvency Engine
 
+### 🌐 [**Live Interactive Dashboard →**](https://shuklavaibhavv.github.io/Early-Credit-Risk-Warning/)
+
 I built this project to test a simple question: **could we have predicted major corporate bankruptcies and bank collapses (like Credit Suisse, SVB, WeWork, and Bed Bath & Beyond) months before they actually happened?**
 
 Standard financial ratios like Altman Z-Score work well for normal retail or chemical companies, but they break down when you try to apply them to banks — or when financial statements are filed with a 45-day SEC lag. To solve this, I combined sector-tailored accounting ratios with Merton's structural Distance-to-Default model (which uses daily stock market prices to estimate firm solvency in real time).
@@ -51,6 +53,8 @@ $$\text{Risk Score } P(\text{Default} = 1) = \frac{1}{1 + e^{-(\beta_0 + \boldsy
 ```
 credit_risk_project/
 ├── start.py                        # Main launcher script
+├── docs/
+│   └── index.html                  # GitHub Pages live dashboard (deployed)
 ├── src/
 │   ├── companies.py                # 14-company cohort metadata (Group A Distressed vs Group B Healthy)
 │   ├── ratio_engine.py             # Ratio calculation logic with safe division handlers
